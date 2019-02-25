@@ -7,7 +7,7 @@ package logica;
 
 /**
  *
- * @author davi1
+ * @author david padilla
  */
 public class Cinta {
     private Nodo primero;

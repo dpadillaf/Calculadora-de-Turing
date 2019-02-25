@@ -14,7 +14,7 @@ import logica.Nodo;
 
 /**
  *
- * @author davi1
+ * @author david padilla
  */
 public class VentanaCalculadora extends javax.swing.JFrame {
     Cinta c = new Cinta ();
@@ -68,6 +68,11 @@ public class VentanaCalculadora extends javax.swing.JFrame {
         operacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "+", "-", "*", "/" }));
 
         var2.setFont(new java.awt.Font("Arial Black", 0, 18)); // NOI18N
+        var2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                var2ActionPerformed(evt);
+            }
+        });
         var2.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 var2KeyTyped(evt);
@@ -194,6 +199,8 @@ public class VentanaCalculadora extends javax.swing.JFrame {
     }//GEN-LAST:event_var2KeyTyped
 
     private void salirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salirActionPerformed
+        JOptionPane.showMessageDialog(this, "profe ponganos 5, gracias :)");
+
         dispose();
     }//GEN-LAST:event_salirActionPerformed
 
@@ -209,12 +216,19 @@ public class VentanaCalculadora extends javax.swing.JFrame {
         c = new Cinta ();
         f = 0;
         t = "";
+        igual.setEnabled(true);
     }//GEN-LAST:event_resetActionPerformed
 
     private void igualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_igualActionPerformed
+        
+        if(var2.getText().equals("0")){
+            JOptionPane.showMessageDialog(this, "no se puede dividir entre Cero");
+        }
+        else{
         if (var1.getText().equals("") || var2.getText().equals("")){
             JOptionPane.showMessageDialog(null, "Rellene los campos vacíos", "Error", JOptionPane.WARNING_MESSAGE);
         }else{
+            igual.setEnabled(false);
             String op = operacion.getSelectedItem().toString();
             char caracter = op.charAt(0);
             c = c.llenarCinta(Integer.parseInt(var1.getText()), Integer.parseInt(var2.getText()), caracter);
@@ -227,12 +241,23 @@ public class VentanaCalculadora extends javax.swing.JFrame {
                 case "+": 
                     suma ();
                     break;
-                case "-": break;
-                case "*": break;
-                case "/": break;
+                case "-": 
+                    resta ();
+                    break;
+                case "*": 
+                    multiplicacion();
+                    break;
+                case "/": 
+                    division ();
+                    break;
             }
         }
+        }
     }//GEN-LAST:event_igualActionPerformed
+
+    private void var2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_var2ActionPerformed
+          
+    }//GEN-LAST:event_var2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -292,11 +317,10 @@ public class VentanaCalculadora extends javax.swing.JFrame {
                 t += "\n>1["+f+"] {1:X} → ";
                 vec[0] = cinta();
                 tabla1.addRow(vec);
-                consola.setText(t);
                 f++;
                 boolean b = true;
                 while (true){
-                    if (aux.getSig() == null && b == true){
+                    if (aux == null && b == true){
                         c.insertarFinal('=');
                         t += "\n>#["+f+"] {#:=} → ";
                         vec[0] = cinta();
@@ -309,9 +333,8 @@ public class VentanaCalculadora extends javax.swing.JFrame {
                         f--;
                         aux = c.devolverUltimo();
                         aux = aux.getAnt();
-                        consola.setText(t);
                         break;
-                    }else if (aux.getSig() == null && b == false){
+                    }else if (aux == null && b == false){
                         c.insertarFinal('1');
                         t += "\n>#["+f+"] {#:1} ← ";
                         vec[0] = cinta();
@@ -319,17 +342,14 @@ public class VentanaCalculadora extends javax.swing.JFrame {
                         f--;
                         aux = c.devolverUltimo();
                         aux = aux.getAnt();
-                        consola.setText(t);
                         break;
                     }else if (aux.getDato() == '1' || aux.getDato() == '+'){
                         t += "\n>"+aux.getDato()+"["+f+"] → ";
                         aux = aux.getSig();
-                        consola.setText(t);
                         f++;
                     }else if(aux.getDato() == '='){
                         t += "\n>"+aux.getDato()+"["+f+"] → ";
                         aux = aux.getSig();
-                        consola.setText(t);
                         f++;
                         b = false;
                     }
@@ -340,12 +360,10 @@ public class VentanaCalculadora extends javax.swing.JFrame {
                         t += "\n>"+aux.getDato()+"["+f+"] ← ";
                         f--;
                         aux = aux.getAnt();
-                        consola.setText(t);
                     }else if (aux.getDato() == 'x'){
                         t += "\n>"+aux.getDato()+"["+f+"] → ";
                         f++;
                         aux = aux.getSig();
-                        consola.setText(t);
                         break;
                     }
                 }
@@ -353,12 +371,18 @@ public class VentanaCalculadora extends javax.swing.JFrame {
             }else if (aux.getDato() == '+'){
                 t += "\n>"+aux.getDato()+"["+f+"] → ";
                 f++;
+                if (aux.getAnt() == null && aux.getSig() == null){
+                    t += "\n>#["+f+"] {#:=} _ ";
+                    c.insertarFinal('=');
+                    aux = c.devolverUltimo();
+                    vec[0] = cinta();
+                    tabla1.addRow(vec);
+                    break;
+                }
                 aux = aux.getSig();
-                consola.setText(t);
             }else if (aux.getDato() == '='){
                 t += "\n>"+aux.getDato()+"["+f+"] _\n>Operación realizada!\n>Resultado: "+cinta()+"\n>Contando 1's...";
                 f++;
-                consola.setText(t);
                 break;
             }            
         }
@@ -366,14 +390,744 @@ public class VentanaCalculadora extends javax.swing.JFrame {
            aux = aux.getSig();
            sum++;
         }
-        t += ">\nFIN OPERACION: "+Integer.parseInt(var1.getText())+" + "
+        t += "\n>FIN OPERACION: "+Integer.parseInt(var1.getText())+" + "
                     +Integer.parseInt(var2.getText())+" = "+sum;
         consola.setText(t);
         respuesta.setText(Integer.toString(sum));
     }
     
+    private void resta (){
+        Nodo aux = c.getPrimero();
+        t += "\n>Partiendo #[0] → ";
+        int rest = 0;
+        f++;
+        while (true){
+            if (aux == null){
+                c.insertarFinal('=');
+                t += "\n>#["+f+"] {#:=} _ ";
+                vec[0] = cinta();
+                tabla1.addRow(vec);
+                break;
+            }else if (aux.getDato() == '1'){
+                aux.setDato('x');
+                aux = aux.getSig();
+                t += "\n>1["+f+"] {1:X} → ";
+                vec[0] = cinta();
+                tabla1.addRow(vec);
+                f++; 
+                while (true){
+                    if (aux.getDato() == '1'){
+                        t += "\n>1["+f+"] → ";
+                        aux = aux.getSig();
+                        f++;
+                    }else if (aux.getDato() == '-'){
+                       t += "\n>-["+f+"] → ";
+                       aux = aux.getSig();
+                       f++;
+                       break; 
+                    }
+                }
+                boolean b = true;
+                while (true){
+                    if (aux == null && b){
+                        c.insertarFinal('=');
+                        t += "\n>#["+f+"] {#:=} → ";
+                        vec[0] = cinta();
+                        tabla1.addRow(vec);
+                        f++;
+                        c.insertarFinal('1');
+                        t += "\n>#["+f+"] {#:1} ← ";
+                        vec[0] = cinta();
+                        tabla1.addRow(vec);
+                        f--;
+                        aux = c.devolverUltimo();
+                        aux = aux.getAnt();
+                        break;
+                    }else if (aux == null && b == false){
+                        c.insertarFinal('1');
+                        t += "\n>#["+f+"] {#:1} ← ";
+                        vec[0] = cinta();
+                        tabla1.addRow(vec);
+                        f--;
+                        aux = c.devolverUltimo();
+                        aux = aux.getAnt();
+                        break;
+                    }else if (aux.getDato() == 'y'){
+                        t += "\n>Y["+f+"] → ";
+                        aux = aux.getSig();
+                        f++;
+                    }else if (aux.getDato() == '1'){
+                       t += "\n>1["+f+"] {1:Y} ← ";
+                       aux.setDato('y');
+                       aux = aux.getAnt();
+                       vec[0] = cinta();
+                        tabla1.addRow(vec);
+                       f--;
+                       break; 
+                    }else if (aux.getDato() == '='){
+                        b = false;
+                        //t += "\n>=["+f+"] → ";
+                        c.insertarFinal('1');
+                        t += "\n>#["+f+"] {#:1} ← ";
+                        vec[0] = cinta();
+                        tabla1.addRow(vec);
+                        f--;
+                        break;
+                    }
+                }
+                while (true){
+                    if (aux.getDato() == '1' || aux.getDato() == '=' || aux.getDato() == 'y' || aux.getDato() == '-'){
+                         t += "\n>"+aux.getDato()+"["+f+"] ← ";
+                         aux = aux.getAnt();
+                         f--;
+                    }else if (aux.getDato() == 'x'){
+                        t += "\n>x["+f+"] → ";
+                        aux = aux.getSig();
+                        f++;
+                        break;
+                    }
+                }
+            }else if (aux.getDato() == '-'){
+                 t += "\n>-["+f+"] → ";
+                 if (aux.getSig() == null){
+                     c.insertarFinal('=');
+                     t += "\n>#["+f+"] {#:=} _ ";
+                     vec[0] = cinta();
+                     tabla1.addRow(vec);
+                     aux = c.devolverUltimo();
+                     break;
+                 }
+                 aux = aux.getSig();
+                 f++;
+                 //boolean b = true;
+                 while (true){
+                     if (aux == null){
+                        c.insertarFinal('=');
+                        t += "\n>#["+f+"] {#:=} ← ";
+                        vec[0] = cinta();
+                        tabla1.addRow(vec);
+                        f--;
+                        aux = c.devolverUltimo();
+                        break;
+                     }else if (aux.getDato() == '='){
+                         t += "\n>=["+f+"] _ ";
+                         break;
+                     }else if (aux.getDato() == 'y'){
+                         t += "\n>y["+f+"] → ";
+                         aux = aux.getSig();
+                         f++;
+                     }else if (aux.getDato() == '1'){
+                        t += "\n>1["+f+"] {1:Y} → ";
+                        aux.setDato('y');
+                        aux = aux.getSig();
+                        vec[0] = cinta();
+                        tabla1.addRow(vec);
+                        f++;
+                        while (true){
+                            if (aux == null){
+                                c.insertarFinal('=');
+                                t += "\n>#["+f+"] {#:=} → ";
+                                vec[0] = cinta();
+                                tabla1.addRow(vec);
+                                f++;
+                                c.insertarFinal('-');
+                                t += "\n>#["+f+"] {#:-} → ";
+                                vec[0] = cinta();
+                                tabla1.addRow(vec);
+                                f++;
+                                c.insertarFinal('1');
+                                t += "\n>#["+f+"] {#:1} ← ";
+                                vec[0] = cinta();
+                                tabla1.addRow(vec);
+                                f--;
+                                aux = c.devolverUltimo();
+                                aux = aux.getAnt();
+                                while (true){
+                                    if (aux.getDato() == '1' || aux.getDato() == '-' || aux.getDato() == '='){
+                                        t += "\n>"+aux.getDato()+"["+f+"] ← ";
+                                        aux = aux.getAnt();
+                                        f--;
+                                    }else if (aux.getDato() == 'y'){
+                                        t += "\n>y["+f+"] → ";
+                                        aux = aux.getSig();
+                                        f++;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                            else if (aux.getDato() == '1'){
+                                t += "\n>1["+f+"] → ";
+                                aux = aux.getSig();
+                                f++;
+                            }else if (aux.getDato() == '='){
+                                t += "\n>=["+f+"] → ";
+                                c.insertarFinal('1');
+                                vec[0] = cinta();
+                                tabla1.addRow(vec);
+                                f++;
+                                if (aux.getAnt().getDato() == 'y'){
+                                    break;
+                                }
+                                
+                                /*while (true){
+                                    if (aux == null){
+                                        c.insertarFinal('1');
+                                        t += "\n>#["+f+"] {#:1} ← ";
+                                        vec[0] = cinta();
+                                        tabla1.addRow(vec);
+                                        f--;
+                                        aux = c.devolverUltimo();
+                                        aux = aux.getAnt();
+                                        break;
+                                    }else if (aux.getDato() == '1'){
+                                        t += "\n>1["+f+"] → ";
+                                        aux = aux.getSig();
+                                        f++;
+                                    }
+                                }*/
+                                while (true){
+                                    if (aux.getDato() == '1' || aux.getDato() == '-' || aux.getDato() == '='){
+                                        t += "\n>"+aux.getDato()+"["+f+"] ← ";
+                                        aux = aux.getAnt();
+                                        f--;
+                                    }else if (aux.getDato() == 'y'){
+                                         t += "\n>y["+f+"] → ";
+                                        aux = aux.getSig();
+                                        f++;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                     }
+                 }
+               break;  
+            }
+        }
+        aux = c.devolverUltimo();
+        while (true){
+            if (aux.getDato() == '1'){
+                aux = aux.getAnt();
+                rest++;
+            }else if(aux.getDato() == '-'){
+                rest = rest*(-1);
+                break;
+            }else if (aux.getDato() == '='){
+                break;
+            }
+        }
+        t += "\n>FIN OPERACION: "+Integer.parseInt(var1.getText())+" - "
+                    +Integer.parseInt(var2.getText())+" = "+rest;
+        consola.setText(t);
+        respuesta.setText(Integer.toString(rest));
+    }
     
+    private void multiplicacion (){
+        Nodo aux = c.getPrimero();
+        t += "\n>Partiendo #[0] → ";
+        int mult = 0;
+        f++;
+        while (true){
+            if (aux.getDato() == '1'){
+                aux.setDato('x');
+                aux = aux.getSig();
+                t += "\n>1["+f+"] {1:X} → ";
+                vec[0] = cinta();
+                tabla1.addRow(vec);
+                f++; 
+                while (true){
+                    if (aux.getDato() == '1'){
+                        t += "\n>1["+f+"] → ";
+                        aux = aux.getSig();
+                        f++;
+                    }else if (aux.getDato() == '*'){
+                       t += "\n>*["+f+"] → ";
+                       aux = aux.getSig();
+                       f++;
+                       break; 
+                    }
+                }
+                if (aux == null){
+                    c.insertarFinal('=');
+                    t += "\n>#["+f+"] {#:=} _ ";
+                    vec[0] = cinta();
+                    tabla1.addRow(vec);
+                    aux = c.devolverUltimo();
+                    break;
+                }
+                while (true){
+                    if (aux.getDato() == 'y'){
+                        t += "\n>y["+f+"] → ";
+                        aux = aux.getSig();
+                        f++;
+                    }else if (aux.getDato() == '1'){
+                       t += "\n>1["+f+"] {1:Y} → ";
+                       aux.setDato('y');
+                       aux = aux.getSig();
+                       f++;
+                       
+                       while (true){
+                        if (aux == null){
+                            c.insertarFinal('=');
+                            t += "\n>#["+f+"] {#:=} → ";
+                            f++;
+                            vec[0] = cinta();
+                            tabla1.addRow(vec);
+                            c.insertarFinal('1');
+                            t += "\n>#["+f+"] {#:1} ← ";
+                            f--;
+                            vec[0] = cinta();
+                            tabla1.addRow(vec);
+                            aux = c.devolverUltimo();
+                            while (true){
+                                if (aux.getDato() == '1' || aux.getDato() == '='){
+                                    t += "\n>"+aux.getDato()+"["+f+"] ← ";
+                                    aux = aux.getAnt();
+                                    f--; 
+                                }else if (aux.getDato() == 'y'){
+                                    t += "\n>y["+f+"] → ";
+                                    aux = aux.getSig();
+                                    f++;
+                                    break;
+                                }
+                            }
+                            break;
+                        }else if (aux.getDato() == '1'){
+                            t += "\n>1["+f+"] → ";
+                            aux = aux.getSig();
+                            f++;
+                        }else if (aux.getDato() == '='){
+                            t += "\n>=["+f+"] → ";
+                            aux = aux.getSig();
+                            f++;
+                            while (true){
+                               if (aux == null){
+                                    c.insertarFinal('1');
+                                    t += "\n>#["+f+"] {#:1} ← ";
+                                    f--;
+                                    vec[0] = cinta();
+                                    tabla1.addRow(vec);
+                                    aux = c.devolverUltimo();
+                                    aux = aux.getAnt();
+                                    break;
+                                }else if (aux.getDato() == '1'){
+                                    t += "\n>1["+f+"] → ";
+                                    aux = aux.getSig();
+                                    f++; 
+                                }
+                            }
+                            while (true){
+                                if (aux.getDato() == '1' || aux.getDato() == '='){
+                                    t += "\n>"+aux.getDato()+"["+f+"] ← ";
+                                    aux = aux.getAnt();
+                                    f--; 
+                                }else if (aux.getDato() == 'y'){
+                                    t += "\n>y["+f+"] → ";
+                                    aux = aux.getSig();
+                                    f++;
+                                    break;
+                                }
+                            }
+                            
+                            break;
+                        }
+                       }
+                    }else if (aux.getDato() == '='){
+                        t += "\n>=["+f+"] ← ";
+                        aux = aux.getAnt();
+                        f--;
+                        while (true){
+                            if (aux.getDato() == 'y'){
+                                t += "\n>y["+f+"] {Y:1} ← ";
+                                aux.setDato('1');
+                                aux = aux.getAnt();
+                                vec[0] = cinta();
+                                tabla1.addRow(vec);
+                                f--;
+                            }else if (aux.getDato() == '*'){
+                                t += "\n>*["+f+"] ← ";
+                                aux = aux.getAnt();
+                                f--;
+                                break;
+                            }
+                        }
+                        while (true){
+                            if (aux.getDato() == '1'){
+                                t += "\n>1["+f+"] ← ";
+                                aux = aux.getAnt();
+                                f--;
+                            }else if (aux.getDato() == 'x'){
+                                t += "\n>X["+f+"] → ";
+                                aux = aux.getSig();
+                                f++;
+                                break;
+                            }
+                        }
+                        break;
+                    }   
+                }
+            }else if (aux.getDato() == '*'){
+                t += "\n>*["+f+"] _ ";
+                if (aux.getAnt() == null){
+                    c.insertarFinal('=');
+                    vec[0] = cinta();
+                    tabla1.addRow(vec);
+                }
+                break;
+            }
+        }
+        aux = c.devolverUltimo();
+        while (true){
+            if (aux.getDato() == '1'){
+                aux = aux.getAnt();
+                mult++;
+            }else if (aux.getDato() == '='){
+                break;
+            }
+        }
+        t += "\n>FIN OPERACION: "+Integer.parseInt(var1.getText())+" * "
+                    +Integer.parseInt(var2.getText())+" = "+mult;
+        consola.setText(t);
+        respuesta.setText(Integer.toString(mult));
+    }
+    
+    private void division (){
+        int contador=0;
+        int res = 0;
+        c.insertarPrincipio('#');
+        c.insertarFinal('#'); 
+        
+        
+        Nodo aux = c.getPrimero();
+        
+        
+        
+        
+        t += "\n>Partiendo #[0] → ";
+        int div = 0;
+        f++;
+        
+        while (true){
+                if(aux.getSig().getDato()=='1'||aux.getSig().getDato()=='/'){
+                aux = aux.getSig();    
+                break;
+                }
+        }
+        
+        if(aux.getDato()=='1'){
+            t += "\n>1["+f+"] → ";
+            f++;
+            aux =aux.getSig();        
+    
+            //q1
+            while(aux.getDato()=='1'||aux.getDato()=='/'){
+                t += "\n>"+aux.getDato()+"["+f+"] → ";
+                f++;
+                aux=aux.getSig();
+            }
 
+            if(aux.getDato()== '#'){
+                t += "\n>#["+f+"] {#:=} ← ";
+                f--;
+                aux.setDato('='); 
+                c.insertarFinal('#');
+                //System.out.println(aux.getDato());
+                //System.out.println(cinta ());
+                aux= aux.getAnt();
+                vec[0] = cinta();
+                tabla1.addRow(vec);
+            }
+            //hasta aqui estoy en q2
+            // y aqui hay un 1 en el auxiliar
+            
+            while(aux.getDato()=='1'||aux.getDato()=='/'){
+                //q2 - q3
+                
+                while(aux.getDato()=='1'){
+                        aux.setDato('x');
+                        //c.insertarFinal('#');
+                        t += "\n>1["+f+"] {1:X} ← ";
+                        f--;
+                        vec[0] = cinta();
+                        tabla1.addRow(vec);
+                        aux = aux.getAnt();
+
+                        //q3
+                        
+                        while(aux.getDato()=='1'|| aux.getDato()=='/'){
+                            t += "\n>"+aux.getDato()+"["+f+"] ← ";
+                            f--;
+                            aux = aux.getAnt();
+                        }
+                        
+                        //q3 - q4
+                        if(aux.getDato()=='#'||aux.getDato()=='y'){
+                            t += "\n>"+aux.getDato()+"["+f+"] → ";
+                            f++;
+                            aux= aux.getSig();
+                            
+                        }
+                        
+///////////////////aqui estoy en q4/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        //q4 - q9
+                        
+                        if(aux.getDato()=='/'){
+                            
+                            t += "\n>/["+f+"] → ";
+                            f++;
+                            aux=aux.getSig();        
+                        
+                            //q9
+                            while(aux.getDato()=='1'){
+                                t += "\n>1["+f+"] → ";
+                                f++;
+                                aux=aux.getSig();
+                            }
+                            //q9 - q10
+                            if(aux.getDato()=='x'){
+                                aux.setDato('1');
+                                t += "\n>X["+f+"] {X:1} → ";
+                                f++;
+                                vec[0] = cinta();
+                                tabla1.addRow(vec);
+                                aux=aux.getSig();
+                            }
+
+                            //q10
+                            while(aux.getDato()=='x'){
+                                t += "\n>X["+f+"] → ";
+                                f++;
+                                aux=aux.getSig();
+                            }
+                            //q10 - q11
+                            if(aux.getDato()=='='){
+                                t += "\n>=["+f+"] → ";
+                                f--;
+                                aux=aux.getSig();
+                            }
+                            //q11
+                            while(aux.getDato()=='1'){
+                                t += "\n>1["+f+"] → ";
+                                f++;
+                                aux=aux.getSig();
+                            }
+                            
+                            //q11 - q12
+                            if(aux.getDato()=='#'){
+                                aux.setDato('r');
+                                t += "\n>#["+f+"] {#:r} ← ";
+                                f--;
+                                vec[0] = cinta();
+                                tabla1.addRow(vec);
+                                aux=aux.getAnt();
+                                c.insertarFinal('#');
+                            }
+                            //q12 - q13
+                            
+                            
+                            while(aux.getDato()=='r'||aux.getDato()=='='||aux.getDato()=='1'||aux.getDato()=='x'){
+
+
+                                while(aux.getDato()=='r'||aux.getDato()=='='||aux.getDato()=='1'){
+
+                                    aux=aux.getAnt();
+
+
+                                }
+                                System.out.println("LA CINTA ES: "+cinta());
+                                System.out.println("la cabecera tiene 932"+ aux.getDato());
+
+
+                                if(aux.getDato()=='x'){
+
+                                    t += "\n>X["+f+"] ← ";
+                                    f--;
+                                    aux=aux.getAnt();
+
+                                    while(aux.getDato()=='x'){
+                                        t += "\n>X["+f+"] ← ";
+                                        f--;
+                                        aux=aux.getAnt();
+                                    }
+                                    //q13 - q16
+                                    if(aux.getDato()=='1'){
+                                        t += "\n>1["+f+"] → ";
+                                        f++;
+                                        aux=aux.getSig();
+                                    }
+                                    //q16 - q15
+                                    if(aux.getDato()=='x'){
+                                        aux.setDato('1');
+                                        t += "\n>X["+f+"] {X:1} → ";
+                                        f++;
+                                        vec[0] = cinta();
+                                        tabla1.addRow(vec);
+                                        aux=aux.getSig();
+                                        c.insertarFinal('#');
+                                    }
+
+                                    //q15
+                                    while(aux.getDato()=='x'){
+                                        t += "\n>X["+f+"] → ";
+                                        f++;
+                                        aux=aux.getSig();
+                                    }
+                                    //q15 - q14
+
+                                    if(aux.getDato()=='='){
+                                        t += "\n>=["+f+"] → ";
+                                        f++;
+                                        aux=aux.getSig();
+                                    }
+                                    //q14
+                                    while(aux.getDato()=='r'||aux.getDato()=='1'){
+                                        t += "\n>"+aux.getDato()+"["+f+"] → ";
+                                        f++;
+                                        aux=aux.getSig();
+                                    }
+                                    //q14 - q12
+                                    if(aux.getDato()=='#'){
+                                        aux.setDato('1');
+                                        t += "\n>#["+f+"] {#:1} ← ";
+                                        f--;
+                                        vec[0] = cinta();
+                                        tabla1.addRow(vec);
+                                        aux=aux.getAnt();
+                                    }
+                                }
+                            }
+                            //q12 - q17
+                            if(aux.getDato()=='/'){
+                                t += "\n>/["+f+"] → ";
+                                f++;
+                                aux=aux.getSig();
+                            }
+                            while(aux.getDato()=='1'){
+                                t += "\n>1["+f+"] → ";
+                                f++;
+                                aux=aux.getSig();
+                            }
+                            //q17 - q18
+                            if(aux.getDato()=='='){
+                                t += "\n>=["+f+"] → ";
+                                f++;
+                                aux=aux.getSig();
+                                System.out.println("aqui está el resultado de 1029 : "+ cinta());
+                                
+                                aux = c.devolverUltimo();
+                                while (aux.getDato() != '='){
+                                    aux = aux.getAnt();
+                                }
+                                
+                                aux=aux.getSig();
+                                while (aux.getDato()=='1'){
+                                    aux = aux.getSig();
+                                    div++;
+                                }
+                                if(aux.getDato()=='r'){
+                                    aux=aux.getSig();
+                                    while(aux.getDato() == '1'){
+                                        aux = aux.getSig();
+                                        res++;
+                                    }
+                                }
+                                t += "\n>FIN OPERACION: "+Integer.parseInt(var1.getText())+" / "
+                                            +Integer.parseInt(var2.getText())+" = "+div+" R "+res;
+                                consola.setText(t);
+                                respuesta.setText(Integer.toString(div));
+                                
+                                contador=1;
+                            }
+                        }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //q4 - q5
+                       
+                    if(aux.getDato()=='1'&&contador==0){                        
+                        aux.setDato('y');
+                        c.insertarFinal('#');
+                        t += "\n>1["+f+"] {1:y} → ";
+                        f++;
+                        vec[0] = cinta();
+                        tabla1.addRow(vec);
+                        aux=aux.getSig();
+                    }
+                    while(aux.getDato()=='1'||aux.getDato()=='/'){
+                        t += "\n>"+aux.getDato()+"["+f+"] → ";
+                        f++;
+                        aux= aux.getSig();
+                    }
+                    if(aux.getDato()=='x'){
+                        t += "\n>X["+f+"] ← ";
+                        f--;    
+                        aux=aux.getAnt();
+                    }
+                }
+                while(aux.getDato()=='/'){
+                    aux=aux.getSig();
+                    while(aux.getDato()=='x'){
+                        aux.setDato('1'); 
+                        aux=aux.getSig();
+                    }
+                    if(aux.getDato()=='='){
+                        aux= aux.getSig();
+                    }
+                    while(aux.getDato()=='1'){
+                        aux= aux.getSig();
+                    }
+                    if(aux.getDato()== '#'){
+                        aux.setDato('1');
+                        aux = aux.getAnt();
+                    }
+                    while(aux.getDato()=='1'){
+                        aux= aux.getAnt();
+                    }
+                    if(aux.getDato()=='='){
+                        aux=aux.getAnt();
+                    }
+                }
+            }
+        }
+        //q0 - q19
+
+        else {
+            if(aux.getDato()=='/'){
+                t += "\n>/["+f+"] → ";
+                f++;
+                aux = aux.getSig();
+                while(aux.getDato()=='1'){
+                    t += "\n>1["+f+"] → ";
+                    f++;
+                    aux=aux.getSig();
+                }
+                if(aux.getDato()=='#'){
+                    aux.setDato('=');
+                    t += "\n>#["+f+"] {#:=} → ";
+                    f++;
+                    vec[0] = cinta();
+                    tabla1.addRow(vec);
+                    aux=aux.getSig();
+                    //aqui acaba y va a l estado de aceptacion
+                }
+            }
+            
+                                aux = c.devolverUltimo();
+                                System.out.println("ultimo aqui :"+aux.getDato());
+                                 
+                                
+                                
+                                
+                                t += "\n>FIN OPERACION: "+Integer.parseInt(var1.getText())+" / "
+                                            +Integer.parseInt(var2.getText())+" = "+div+" R "+res;
+                                consola.setText(t);
+                                respuesta.setText(Integer.toString(div));
+                                 
+        } 
+        
+    }
+
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextPane consola;
     private javax.swing.JButton igual;

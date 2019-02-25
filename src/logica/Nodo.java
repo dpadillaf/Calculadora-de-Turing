@@ -7,7 +7,7 @@ package logica;
 
 /**
  *
- * @author davi1
+ * @author david padilla
  */
 public class Nodo {
     private Nodo ant;
